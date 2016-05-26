@@ -2,6 +2,7 @@
 
 import os 
 import sys
+import glob
 from utils import *
 from datetime import datetime
 import pandas as pd
@@ -33,9 +34,11 @@ K_MIN_ARG = 4
 def calcDailyDataForAllStocks(OUTPUT_FOLDER, symbols, start, end):
 	for symbol in symbols:
 		try:
-			print("Stock Info For: " + str(symbol))
-			stock_info_from_google = web.DataReader("%s" %symbol, 'google', start, end)
-			stock_info_from_google.to_csv(OUTPUT_FOLDER + "/%s_from_google.csv" %symbol)
+			fn = OUTPUT_FOLDER + "/%s_from_google.csv" %symbol
+			if not glob.glob(fn):
+				print("Stock Info For: " + str(symbol))
+				stock_info_from_google = web.DataReader("%s" %symbol, 'google', start, end)
+				stock_info_from_google.to_csv(fn)
 		except:
 			print(symbol + " stock extraction failed")
 			continue 
