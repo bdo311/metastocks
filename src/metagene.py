@@ -18,7 +18,9 @@ USAGE_STR = """
 # <OUTPUT_FILE> Absolute path to the output metagene file. 
 
 # Example
-# python metagene.py /afs/ir.stanford.edu/users/a/k/akma327/stats205/midterm-project/metastocks/data/historical-data/tech /afs/ir.stanford.edu/users/a/k/akma327/stats205/midterm-project/metastocks/data/metagene-output/tech-metagene.txt
+# setenv AGGREGATE_FOLDER_PATH "/afs/ir.stanford.edu/users/a/k/akma327/stats205/midterm-project/metastocks/data/historical-data/tech"
+# setenv OUTPUT_FILE "/afs/ir.stanford.edu/users/a/k/akma327/stats205/midterm-project/metastocks/data/metagene-output/tech-metagene.txt"
+# python metagene.py $AGGREGATE_FOLDER_PATH $OUTPUT_FILE
 
 """
 
