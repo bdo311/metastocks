@@ -15,7 +15,7 @@ USAGE_STR = """
 # multiple stock trajectories. 
 
 # Usage 
-# python metagene.py <AGGREGATE_FOLDER_PATH> <MARKET_CAP_FILE> <OUTPUT_FILE> <START_DATE> <END_DATE> <ONE_DATE>
+# python metagene.py <AGGREGATE_FOLDER_PATH> <MARKET_CAP_FILE> <OUTPUT_FILE> <START_DATE> <END_DATE> <ONE_DATE> <USAGE_FLAG>
 
 # Arguments 
 # <AGGREGATE_FOLDER_PATH> Path to the folder aggregating all the daily stock data for 
@@ -25,9 +25,15 @@ USAGE_STR = """
 # <START_DATE> Start date of metagene, in form YYYYMMDD
 # <END_DATE> End date of metagene, in form YYYYMMDD
 # <ONE_DATE> Date where all stocks should be normalized to 1, in form YYYYMMDD
+# <USAGE_FLAG> 
+	-metagene If user wants to compute metagene 
+	-summary If user wants to compute stock to date summary table for all the market values 
 
-# Example
-python metagene.py ../data/historical-data/6-industrial-goods/ ../data/marketcaps.csv ../data/metagene_output/6-metagene.txt 20080101 20151231 20090101
+# Example - Compute Metagene
+python metagene.py ../data/historical-data/6-industrial-goods/ ../data/marketcaps.csv ../data/metagene_output/6-metagene.txt 20080101 20151231 20090101 -metagene
+
+# Example - Compute Frequency Summary Table 
+python metagene.py ../data/historical-data/6-industrial-goods/ ../data/marketcaps.csv ../data/metagene_output/6-metagene.txt 20080101 20151231 20090101 -summary
 
 """
 
@@ -63,7 +69,7 @@ def getMarketCap(year, mktcap):
 
 # Process a single stock time series file 
 def processStockInfo(stock_file, do_mktcap, mktcap, START, END, ONE):
-	dateToInfo = {}
+	dateToInfo = {} # {date: (value, market cap)}
 	with open(stock_file, 'r') as f:
 		normalizing_prices = []
 		for line in f: 
@@ -129,7 +135,7 @@ def readMarketCapFile(fn):
 		
 	return stocks_to_mktcap	
 	
-def metagene(AGGREGATE_FOLDER_PATH, MARKET_CAP_FILE, OUTPUT_FILE, START, END, ONE):
+def metagene(AGGREGATE_FOLDER_PATH, MARKET_CAP_FILE, OUTPUT_FILE, START, END, ONE, USAGE_FLAG):
 	# Read in files
 	do_mktcap = True
 	if MARKET_CAP_FILE != "none":
@@ -152,21 +158,23 @@ def metagene(AGGREGATE_FOLDER_PATH, MARKET_CAP_FILE, OUTPUT_FILE, START, END, ON
 	# Make weighted and unweighted metagenes
 	(weighted, unweighted) = averageStockInfo(stock_to_dict)
 
-	ofile = genWriteDescriptor(OUTPUT_FILE)
-	writer = csv.writer(ofile)
-	row1 = ['date']
-	row1.extend(sorted(weighted.keys()))
-	writer.writerow(row1)
-	
-	row2 = ['weighted']
-	nums = [weighted[x] for x in sorted(weighted.keys())]
-	row2.extend(nums)
-	writer.writerow(row2)
+	if(USAGE_FLAG == "-metagene"):
+		ofile = genWriteDescriptor(OUTPUT_FILE)
+		writer = csv.writer(ofile)
+		row1 = ['date']
+		row1.extend(sorted(weighted.keys()))
+		writer.writerow(row1)
+		
+		row2 = ['weighted']
+		nums = [weighted[x] for x in sorted(weighted.keys())]
+		row2.extend(nums)
+		writer.writerow(row2)
 
-	row3 = ['unweighted']
-	nums = [unweighted[x] for x in sorted(weighted.keys())]
-	row3.extend(nums)
-	writer.writerow(row3)
+		row3 = ['unweighted']
+		nums = [unweighted[x] for x in sorted(weighted.keys())]
+		row3.extend(nums)
+		writer.writerow(row3)
+	return stock_to_dict
 		
 def process_date(x, prefix):
 	if len(x) != 8: 
@@ -175,7 +183,44 @@ def process_date(x, prefix):
 	d = dt.date(int(x[:4]), int(x[4:6]), int(x[6:8]))	
 	print "{} date: {}".format(prefix, d)
 	return d
-	
+
+
+# CODE FOR COMPUTING FREQUENCY TABLE BETWEEN STOCKS AND DATES 
+
+# Generate a sorted union of all times over all the stocks 
+def unionizeDates(stock_to_dict):
+	date_union = []
+	for stock in stock_to_dict:
+		date_union += stock_to_dict[stock].keys()
+	return sorted(list(set(date_union)))
+
+
+# Get the stock values for single stock 
+def getStockValues(stock_to_dict, date_union, stock):
+	date_to_val_dict = stock_to_dict[stock]
+	date_vals = []
+	for date in date_union:
+		if(date in date_to_val_dict):
+			date_vals.append(str(round(date_to_val_dict[date][0],4)))
+		else:
+			date_vals.append(str(float(0)))
+	return date_vals
+
+# Generate tab delimited table where rows are stocks and columns are time points
+# cell entries represent normalized market value. 
+def genStockToTimepointTable(stock_to_dict, OUTPUT_FILE):
+	f = genWriteDescriptor(OUTPUT_FILE)
+	all_stocks = stock_to_dict.keys() 
+	date_union = unionizeDates(stock_to_dict)
+	all_dates = [str(t) for t in date_union]
+	header = "Stocks/Dates\t" + "\t".join(all_dates) + "\n"
+	f.write(header)
+	for stock in all_stocks:
+		row_info = stock + "\t" + "\t".join(getStockValues(stock_to_dict, date_union, stock)) + "\n"
+		f.write(row_info)
+
+
+
 if __name__ == "__main__":
 	AGGREGATE_FOLDER_PATH = sys.argv[1]
 	MARKET_CAP_FILE = sys.argv[2]
@@ -183,11 +228,14 @@ if __name__ == "__main__":
 	START = process_date(sys.argv[4], "Start")
 	END = process_date(sys.argv[5], "End")
 	ONE = process_date(sys.argv[6], "Norm")
+	USAGE_FLAG = sys.argv[7]
 	if ONE < START or ONE > END:
 		print "Normalization date is outside the start-end range."
 		exit(1)
 		
-	metagene(AGGREGATE_FOLDER_PATH, MARKET_CAP_FILE, OUTPUT_FILE, START, END, ONE)
+	stock_to_dict = metagene(AGGREGATE_FOLDER_PATH, MARKET_CAP_FILE, OUTPUT_FILE, START, END, ONE, USAGE_FLAG)
+	if(USAGE_FLAG == "-summary"):
+		genStockToTimepointTable(stock_to_dict, OUTPUT_FILE)
 
 
 

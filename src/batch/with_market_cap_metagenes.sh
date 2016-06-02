@@ -2,7 +2,7 @@
 
 cd /scratch/PI/rondror/akma327/MetaStocks/metastocks/src
 
-python metagene.py ../data/historical-data/1-basic-materials/ ../data/marketcaps.csv ../data/metagene_output/with-market-cap/1-basic-materials-with-cap-metagene.txt 20080101 20151231 20090101
+python metagene.py ../data/historical-data/1-basic-materials/ ../data/marketcaps.csv ../data/metagene_output/with-market-cap/1-basic-materials-with-cap-metagene.txt 20080101 20151231 20090101 
 
 
 python metagene.py ../data/historical-data/2-conglomerates/ ../data/marketcaps.csv ../data/metagene_output/with-market-cap/2-conglomerates-with-cap-metagene.txt 20080101 20151231 20090101
