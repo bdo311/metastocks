@@ -35,6 +35,16 @@ METAGENE_FILE_HEADER = "Date,Open,High,Low,Close,Volume\n"
 DATES = [2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008]
 WINDOW = 10
 
+def createDirectory(OUTPUT_FILE):
+	directory = os.path.dirname(OUTPUT_FILE)
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+
+# Generate write file descriptor 
+def genWriteDescriptor(OUTPUT_FILE):
+	createDirectory(OUTPUT_FILE)
+	return open(OUTPUT_FILE, 'w')
+
 def getMarketCap(year, mktcap):
 	if year in mktcap and mktcap[year] != "NA": return mktcap[year]
 	
@@ -134,21 +144,21 @@ def metagene(AGGREGATE_FOLDER_PATH, MARKET_CAP_FILE, OUTPUT_FILE, START, END, ON
 	# Make weighted and unweighted metagenes
 	(weighted, unweighted) = averageStockInfo(stock_to_dict)
 
-	with open(OUTPUT_FILE, 'w') as ofile:
-		writer = csv.writer(ofile)
-		row1 = ['date']
-		row1.extend(sorted(weighted.keys()))
-		writer.writerow(row1)
-		
-		row2 = ['weighted']
-		nums = [weighted[x] for x in sorted(weighted.keys())]
-		row2.extend(nums)
-		writer.writerow(row2)
+	ofile = genWriteDescriptor(OUTPUT_FILE)
+	writer = csv.writer(ofile)
+	row1 = ['date']
+	row1.extend(sorted(weighted.keys()))
+	writer.writerow(row1)
+	
+	row2 = ['weighted']
+	nums = [weighted[x] for x in sorted(weighted.keys())]
+	row2.extend(nums)
+	writer.writerow(row2)
 
-		row3 = ['unweighted']
-		nums = [unweighted[x] for x in sorted(weighted.keys())]
-		row3.extend(nums)
-		writer.writerow(row3)
+	row3 = ['unweighted']
+	nums = [unweighted[x] for x in sorted(weighted.keys())]
+	row3.extend(nums)
+	writer.writerow(row3)
 		
 def process_date(x, prefix):
 	if len(x) != 8: 
