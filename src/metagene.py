@@ -7,6 +7,7 @@ import csv
 import collections
 import numpy as np
 import datetime as dt
+import pandas as pd
 import math
 
 USAGE_STR = """
@@ -129,7 +130,54 @@ def readMarketCapFile(fn):
 		
 	return stocks_to_mktcap	
 	
-def metagene(AGGREGATE_FOLDER_PATH, MARKET_CAP_FILE, OUTPUT_FILE, START, END, ONE):
+def write_row(writer, name, data):
+	row = [name]
+	row.extend(data)
+	writer.writerow(row)
+	
+def write_metagene(weighted, unweighted, OUTPUT_FILE, resample):
+	ofile = genWriteDescriptor(OUTPUT_FILE)
+	writer = csv.writer(ofile)
+	
+	write_row(writer, 'date', sorted(weighted.keys()))
+	write_row(writer, 'weighted', [weighted[x] for x in sorted(weighted.keys())])
+	write_row(writer, 'unweighted', [unweighted[x] for x in sorted(weighted.keys())])
+	
+	if resample: 
+		return (ofile, writer)
+	else:
+		ofile.close()
+		return 0
+
+def write_metagene_resample(weighted, unweighted, resampled_weighted, resampled_unweighted, OUTPUT_FILE, resample):
+	(ofile, writer) = write_metagene(weighted, unweighted, OUTPUT_FILE, resample)
+	
+	w5 = []
+	w50 = []
+	w95 = []
+	uw5 = []
+	uw50 = []
+	uw95 = []
+	
+	for d in sorted(weighted.keys()):
+		w = sorted([resampled_weighted[i][d] for i in resampled_weighted])
+		w5.append(w[4])
+		w50.append(w[49])
+		w95.append(w[94])
+		uw = sorted([resampled_unweighted[i][d] for i in resampled_unweighted])
+		uw5.append(uw[4])
+		uw50.append(uw[49])
+		uw95.append(uw[94])	
+		
+	write_row(writer, "weighted_5pct", w5)
+	write_row(writer, "weighted_50pct", w50)
+	write_row(writer, "weighted_95pct", w95)
+	write_row(writer, "unweighted_5pct", uw5)
+	write_row(writer, "unweighted_50pct", uw50)
+	write_row(writer, "unweighted_95pct", uw95)
+	
+		
+def metagene(AGGREGATE_FOLDER_PATH, MARKET_CAP_FILE, OUTPUT_FILE, START, END, ONE, resample=True):
 	# Read in files
 	do_mktcap = True
 	if MARKET_CAP_FILE != "none":
@@ -147,27 +195,24 @@ def metagene(AGGREGATE_FOLDER_PATH, MARKET_CAP_FILE, OUTPUT_FILE, START, END, ON
 			#print "{} not in market caps list".format(stock)
 			continue
 		print stock
-		stock_to_dict[stock] = processStockInfo(stock_file,do_mktcap, mktcaps[stock], START, END, ONE)
+		stock_to_dict[stock] = processStockInfo(stock_file, do_mktcap, mktcaps[stock], START, END, ONE)
 	
-	# Make weighted and unweighted metagenes
+	# Make weighted and unweighted metagenes, and resample if necessary
 	(weighted, unweighted) = averageStockInfo(stock_to_dict)
-
-	ofile = genWriteDescriptor(OUTPUT_FILE)
-	writer = csv.writer(ofile)
-	row1 = ['date']
-	row1.extend(sorted(weighted.keys()))
-	writer.writerow(row1)
-	
-	row2 = ['weighted']
-	nums = [weighted[x] for x in sorted(weighted.keys())]
-	row2.extend(nums)
-	writer.writerow(row2)
-
-	row3 = ['unweighted']
-	nums = [unweighted[x] for x in sorted(weighted.keys())]
-	row3.extend(nums)
-	writer.writerow(row3)
+	if not resample:
+		write_metagene(weighted, unweighted, OUTPUT_FILE, resample)
+	else:
+		resampled_weighted = {}
+		resampled_unweighted = {}
+		for i in range(100):
+			if i % 10 == 0: print "Resample iteration {}".format(i)
+			res_keys = np.random.choice(stock_to_dict.keys(), len(stock_to_dict.keys()), replace=True)
+			res_sample_to_dict = {stock: stock_to_dict[stock] for stock in res_keys}
+			(resampled_weighted[i], resampled_unweighted[i]) = averageStockInfo(res_sample_to_dict)
 		
+		write_metagene_resample(weighted, unweighted, resampled_weighted, resampled_unweighted, OUTPUT_FILE, resample)
+		
+			
 def process_date(x, prefix):
 	if len(x) != 8: 
 		print "Date format incorrect for {}".format(x)
