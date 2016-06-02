@@ -11,9 +11,15 @@ def parseTickerList(TICKER_LIST):
     return symbols
 
 
-# Parse hyphen delimited date 
+# Parse hyphen delimited date formatted as (month, day, year)
 def parseDate(date):
 	if(date == None): return datetime.today()
 	date_info = date.split("-")
 	month, day, year = int(date_info[0].strip()), int(date_info[1].strip()), int(date_info[2].strip())
 	return datetime(year, month, day)
+
+def parseDate2(date):
+    if(date == None): return datetime.today()
+    date_info = date.split("-")
+    year, month, day = int(date_info[0].strip()), int(date_info[1].strip()), int(date_info[2].strip())
+    return datetime(year, month, day)
