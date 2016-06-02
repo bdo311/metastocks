@@ -20,8 +20,8 @@ USAGE_STR = """
 # Arguments 
 # <AGGREGATE_FOLDER_PATH> Path to the folder aggregating all the daily stock data for 
 # the stocks of interest. 
-# <MARKET_CAP_FILE> Path to the file that has all market cap data
-# <OUTPUT_FILE> Absolute path to the output metagene file. 
+# <MARKET_CAP_FILE> Path to the file that has all market cap data, or "none" if no market cap data
+# <OUTPUT_FILE> Absolute path to the output metagene file
 # <START_DATE> Start date of metagene, in form YYYYMMDD
 # <END_DATE> End date of metagene, in form YYYYMMDD
 # <ONE_DATE> Date where all stocks should be normalized to 1, in form YYYYMMDD
@@ -62,7 +62,7 @@ def getMarketCap(year, mktcap):
 		if cap != "NA": return cap		
 
 # Process a single stock time series file 
-def processStockInfo(stock_file, mktcap, START, END, ONE):
+def processStockInfo(stock_file, do_mktcap, mktcap, START, END, ONE):
 	dateToInfo = {}
 	with open(stock_file, 'r') as f:
 		normalizing_prices = []
@@ -78,8 +78,11 @@ def processStockInfo(stock_file, mktcap, START, END, ONE):
 			closeprice = float(linfo[4]) 		
 			if math.fabs((date - ONE).days) < 3: normalizing_prices.append(closeprice)
 			
-			cap = getMarketCap(date.year, mktcap)
-			dateToInfo[date] = [closeprice, cap]
+			if do_mktcap:
+				cap = getMarketCap(date.year, mktcap)
+				dateToInfo[date] = [closeprice, cap]
+			else:
+				dateToInfo[date] = [closeprice, 1]
 		
 		# normalize
 		if normalizing_prices == []: return {}  # cannot find a date close enough to normalize by
@@ -128,18 +131,23 @@ def readMarketCapFile(fn):
 	
 def metagene(AGGREGATE_FOLDER_PATH, MARKET_CAP_FILE, OUTPUT_FILE, START, END, ONE):
 	# Read in files
-	mktcaps = readMarketCapFile(MARKET_CAP_FILE)
+	do_mktcap = True
+	if MARKET_CAP_FILE != "none":
+		mktcaps = readMarketCapFile(MARKET_CAP_FILE)
+	else:
+		do_mktcap = False
+		mktcaps = collections.defaultdict(lambda: 0)
 	stock_files = glob.glob(AGGREGATE_FOLDER_PATH + "/*")
 
 	# Get normalized data for each stock over the time period
 	stock_to_dict = {}
 	for stock_file in stock_files:
 		stock = os.path.basename(stock_file).replace("_from_google.csv", "")
-		if stock not in mktcaps: 
+		if do_mktcap and stock not in mktcaps: 
 			#print "{} not in market caps list".format(stock)
 			continue
 		print stock
-		stock_to_dict[stock] = processStockInfo(stock_file, mktcaps[stock], START, END, ONE)
+		stock_to_dict[stock] = processStockInfo(stock_file,do_mktcap, mktcaps[stock], START, END, ONE)
 	
 	# Make weighted and unweighted metagenes
 	(weighted, unweighted) = averageStockInfo(stock_to_dict)
