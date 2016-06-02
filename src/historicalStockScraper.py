@@ -37,7 +37,8 @@ def calcDailyDataForAllStocks(OUTPUT_FOLDER, symbols, start, end):
 			fn = OUTPUT_FOLDER + "/%s_from_google.csv" %symbol
 			if not glob.glob(fn):
 				print("Stock Info For: " + str(symbol))
-				stock_info_from_google = web.DataReader("%s" %symbol, 'google', start, end)
+				#stock_info_from_google = web.DataReader("%s" %symbol, 'google', start, end)
+				stock_info_from_google = web.DataReader("%s" %symbol, 'yahoo', start, end)
 				stock_info_from_google.to_csv(fn)
 		except:
 			print(symbol + " stock extraction failed")

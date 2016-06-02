@@ -203,22 +203,23 @@ def metagene(AGGREGATE_FOLDER_PATH, MARKET_CAP_FILE, OUTPUT_FILE, START, END, ON
 		print stock
 		stock_to_dict[stock] = processStockInfo(stock_file, do_mktcap, mktcaps[stock], START, END, ONE)
 	
+	if (USAGE_FLAG == '-summary'): return stock_to_dict
+	
 	# Make weighted and unweighted metagenes, and resample if necessary
 	(weighted, unweighted) = averageStockInfo(stock_to_dict)
-	
-	if (USAGE_FLAG == '-metagene'):
-		if not resample:
-			write_metagene(weighted, unweighted, OUTPUT_FILE, resample)
-		else:
-			resampled_weighted = {}
-			resampled_unweighted = {}
-			for i in range(100):
-				if i % 10 == 0: print "Resample iteration {}".format(i)
-				res_keys = np.random.choice(stock_to_dict.keys(), len(stock_to_dict.keys()), replace=True)
-				res_sample_to_dict = {stock: stock_to_dict[stock] for stock in res_keys}
-				(resampled_weighted[i], resampled_unweighted[i]) = averageStockInfo(res_sample_to_dict)
-		write_metagene_resample(weighted, unweighted, resampled_weighted, resampled_unweighted, OUTPUT_FILE, resample)
-		
+
+	if not resample:
+		write_metagene(weighted, unweighted, OUTPUT_FILE, resample)
+	else:
+		resampled_weighted = {}
+		resampled_unweighted = {}
+		for i in range(100):
+			if i % 10 == 0: print "Resample iteration {}".format(i)
+			res_keys = np.random.choice(stock_to_dict.keys(), len(stock_to_dict.keys()), replace=True)
+			res_sample_to_dict = {stock: stock_to_dict[stock] for stock in res_keys}
+			(resampled_weighted[i], resampled_unweighted[i]) = averageStockInfo(res_sample_to_dict)
+	write_metagene_resample(weighted, unweighted, resampled_weighted, resampled_unweighted, OUTPUT_FILE, resample)
+
 			
 def process_date(x, prefix):
 	if len(x) != 8: 
