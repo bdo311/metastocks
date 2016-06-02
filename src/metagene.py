@@ -27,7 +27,7 @@ USAGE_STR = """
 # <ONE_DATE> Date where all stocks should be normalized to 1, in form YYYYMMDD
 
 # Example
-# python metagene.py ../data/historical-data/6-industrial-goods/ ../data/marketcaps.csv ../data/metagene_output/6-metagene.txt 20080101 20151231 20090101
+python metagene.py ../data/historical-data/6-industrial-goods/ ../data/marketcaps.csv ../data/metagene_output/6-metagene.txt 20080101 20151231 20090101
 
 """
 
@@ -107,8 +107,8 @@ def averageStockInfo(stock_to_dict):
 		prices = averaged_stocks[d][0]
 		caps = averaged_stocks[d][1]
 		if len(prices) < 2: continue
-		unweighted[d] = np.mean(prices)		
-		weighted[d] = np.inner(prices, caps)/sum(caps)
+		unweighted[d] = round(np.mean(prices),4)
+		weighted[d] = round(np.inner(prices, caps)/sum(caps),4)
 	return (weighted, unweighted)
 
 def readMarketCapFile(fn):
