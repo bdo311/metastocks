@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/share/PI/rondror/software/miniconda/bin/jupyter-notebook", line 4, in <module>
+    from notebook.notebookapp import main
+  File "/share/PI/rondror/software/miniconda/lib/python2.7/site-packages/notebook/notebookapp.py", line 32, in <module>
+    from zmq.eventloop import ioloop
+  File "/share/PI/rondror/software/miniconda/lib/python2.7/site-packages/zmq/__init__.py", line 66, in <module>
+    from zmq import backend
+  File "/share/PI/rondror/software/miniconda/lib/python2.7/site-packages/zmq/backend/__init__.py", line 40, in <module>
+    reraise(*exc_info)
+  File "/share/PI/rondror/software/miniconda/lib/python2.7/site-packages/zmq/backend/__init__.py", line 27, in <module>
+    _ns = select_backend(first)
+  File "/share/PI/rondror/software/miniconda/lib/python2.7/site-packages/zmq/backend/select.py", line 27, in select_backend
+    mod = __import__(name, fromlist=public_api)
+  File "/share/PI/rondror/software/miniconda/lib/python2.7/site-packages/zmq/backend/cython/__init__.py", line 6, in <module>
+    from . import (constants, error, message, context,
+ImportError: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /share/PI/rondror/software/glibc-2.14_glibcxx-3.4/libstdc++.so.6)
