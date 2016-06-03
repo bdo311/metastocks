@@ -83,16 +83,18 @@ def medianStatistic(START_DATE, END_DATE, STOCK_TABLE):
 
 # Whitney U Test Driver
 def whitneyUTestDriver(START_DATE, END_DATE, STOCK_TABLE1, STOCK_TABLE2):
+	print("poop")
 	median_statistic_1 = medianStatistic(START_DATE, END_DATE, STOCK_TABLE1)
 	median_statistic_2 = medianStatistic(START_DATE, END_DATE, STOCK_TABLE2)
 	statistic, pvalue = scipy.stats.mannwhitneyu(median_statistic_1, median_statistic_2)
-	print(statistic, pvalue)
+	return statistic, pvalue
 
 
 if __name__ == "__main__":
 	START_DATE, END_DATE, STOCK_TABLE1, STOCK_TABLE2 = getCommandLineArguments()
-	whitneyUTestDriver(START_DATE, END_DATE, STOCK_TABLE1, STOCK_TABLE2)
-
+	statistic, pvalue = whitneyUTestDriver(START_DATE, END_DATE, STOCK_TABLE1, STOCK_TABLE2)
+	print("Mann Whitney U Test Statistic: " + str(statistic))
+	print("pvalue: " + str(pvalue))
 	
 
 
