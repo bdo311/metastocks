@@ -66,3 +66,13 @@ ImportError: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /shar
 [I 21:43:32.777 NotebookApp] Saving file at /Untitled1.ipynb
 [I 21:43:44.658 NotebookApp] Saving file at /Untitled1.ipynb
 [I 21:45:44.639 NotebookApp] Saving file at /Untitled1.ipynb
+2016-06-03 10:36:11.182 [NotebookApp] Using existing profile dir: u'/arrayCp3/bdo/.ipython/profile_default'
+2016-06-03 10:36:11.267 [NotebookApp] Using MathJax from CDN: https://cdn.mathjax.org/mathjax/latest/MathJax.js
+2016-06-03 10:36:11.330 [NotebookApp] The port 7000 is already in use, trying another random port.
+2016-06-03 10:36:11.331 [NotebookApp] Serving notebooks from local directory: /arrayCp3/bdo/metastocks/src
+2016-06-03 10:36:11.331 [NotebookApp] 0 active kernels 
+2016-06-03 10:36:11.331 [NotebookApp] The IPython Notebook is running at: http://localhost:7001/
+2016-06-03 10:36:11.332 [NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+INFO:tornado.access:302 GET / (127.0.0.1) 2.19ms
+2016-06-03 10:36:46.317 [NotebookApp] CRITICAL | received signal 15, stopping
+2016-06-03 10:36:46.318 [NotebookApp] Shutting down kernels
