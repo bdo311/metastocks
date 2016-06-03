@@ -277,7 +277,8 @@ if __name__ == "__main__":
 	if ONE < START or ONE > END:
 		print "Normalization date is outside the start-end range."
 		exit(1)
-		
+	
+	print("Start metagene.py for: " + OUTPUT_FILE)
 	stock_to_dict = metagene(AGGREGATE_FOLDER_PATH, MARKET_CAP_FILE, OUTPUT_FILE, START, END, ONE, USAGE_FLAG)
 	if(USAGE_FLAG == "-summary"):
 		genStockToTimepointTable(stock_to_dict, OUTPUT_FILE)
